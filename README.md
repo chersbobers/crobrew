@@ -70,6 +70,34 @@ echo "export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin" >> ~/.bashrc && source ~
 
 ## Usage
 
+Crobrew can be used in two modes: command-line and interactive.
+
+### Command-line Mode
+
+```bash
+# Update package list
+cro update
+
+# Search for packages
+cro search firefox
+
+# Install a package
+cro install firefox
+
+# Remove a package
+cro remove firefox
+
+# Show help
+cro help
+
+# Start interactive mode
+cro interactive
+```
+
+### Interactive Mode
+
+Run `cro` without arguments to start interactive mode, which provides a menu-based interface:
+
 Once installed, you can run `crobrew` from your terminal. The application will automatically detect your system's package manager:
 
 - ChromeOS/Linux: Uses apt (Debian/Ubuntu) or dnf (Fedora)

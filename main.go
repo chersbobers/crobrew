@@ -169,7 +169,93 @@ func removePackage(packageName string) error {
 	return nil
 }
 
+func showHelp() {
+	fmt.Println("Crobrew - ChromeOS Package Manager")
+	fmt.Println("\nUsage:")
+	fmt.Println("  cro <command> [package]")
+	fmt.Println("\nCommands:")
+	fmt.Println("  update             Update package list")
+	fmt.Println("  search <query>     Search for packages")
+	fmt.Println("  install <package>  Install a package")
+	fmt.Println("  remove <package>   Remove a package")
+	fmt.Println("  help              Show this help message")
+	fmt.Println("  interactive       Start interactive mode")
+}
+
 func main() {
+	args := os.Args[1:]
+
+	if len(args) == 0 {
+		// If no arguments, start interactive mode
+		startInteractiveMode()
+		return
+	}
+
+	command := args[0]
+	switch command {
+	case "update":
+		fmt.Println("Updating package list...")
+		if err := updatePackageList(); err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Println("Package list updated successfully!")
+
+	case "search":
+		if len(args) < 2 {
+			fmt.Println("Usage: cro search <query>")
+			os.Exit(1)
+		}
+		query := args[1]
+		fmt.Println("Searching packages...")
+		results, err := searchPackages(query)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Println("\nAvailable packages:")
+		fmt.Println(results)
+
+	case "install":
+		if len(args) < 2 {
+			fmt.Println("Usage: cro install <package>")
+			os.Exit(1)
+		}
+		packageName := args[1]
+		fmt.Printf("Installing package %s...\n", packageName)
+		if err := installPackage(packageName); err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Package %s installed successfully!\n", packageName)
+
+	case "remove":
+		if len(args) < 2 {
+			fmt.Println("Usage: cro remove <package>")
+			os.Exit(1)
+		}
+		packageName := args[1]
+		fmt.Printf("Removing package %s...\n", packageName)
+		if err := removePackage(packageName); err != nil {
+			fmt.Printf("Error: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Package %s removed successfully!\n", packageName)
+
+	case "help":
+		showHelp()
+
+	case "interactive":
+		startInteractiveMode()
+
+	default:
+		fmt.Printf("Unknown command: %s\n", command)
+		showHelp()
+		os.Exit(1)
+	}
+}
+
+func startInteractiveMode() {
 	fmt.Println("Welcome to Crobrew - ChromeOS Package Manager")
 	fmt.Println(`
      ____           _

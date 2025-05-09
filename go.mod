@@ -1,3 +1,3 @@
 module github.com/chersbobers/crobrew
 
-go 1.23
+go 1.0

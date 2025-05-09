@@ -14,6 +14,7 @@ type PackageManager struct {
 	search  string
 	update  string
 	install string
+	remove  string
 	name    string
 }
 
@@ -25,12 +26,29 @@ var packageManagers = map[string][]PackageManager{
 			search:  "apt-cache search",
 			update:  "sudo apt-get update",
 			install: "sudo apt-get install",
+			remove:  "sudo apt-get remove",
 		},
 		{
 			name:    "dnf",
 			search:  "dnf search",
 			update:  "sudo dnf check-update",
 			install: "sudo dnf install",
+			remove:  "sudo dnf remove",
+		},
+		// Example: Add pacman package manager
+		{
+			name:    "pacman",
+			search:  "pacman -Ss",
+			update:  "sudo pacman -Sy",
+			install: "sudo pacman -S",
+			remove:  "sudo pacman -R",
+		},
+		{
+			name:    "snap",
+			search:  "snap find",
+			update:  "sudo snap refresh",
+			install: "sudo snap install",
+			remove:  "sudo snap remove",
 		},
 	},
 	"windows": {
@@ -39,12 +57,14 @@ var packageManagers = map[string][]PackageManager{
 			search:  "wsl apt-cache search",
 			update:  "wsl sudo apt-get update",
 			install: "wsl sudo apt-get install",
+			remove:  "wsl sudo apt-get remove",
 		},
 		{
 			name:    "choco",
 			search:  "choco search",
 			update:  "choco upgrade all -y",
 			install: "choco install",
+			remove:  "choco uninstall",
 		},
 	},
 	"darwin": {
@@ -53,6 +73,7 @@ var packageManagers = map[string][]PackageManager{
 			search:  "brew search",
 			update:  "brew update",
 			install: "brew install",
+			remove:  "brew uninstall",
 		},
 	},
 }
@@ -118,6 +139,36 @@ func updatePackageList() error {
 	return nil
 }
 
+func installPackage(packageName string) error {
+	if defaultManager == nil {
+		detectPackageManager()
+	}
+	cmdParts := strings.Split(defaultManager.install, " ")
+	cmdParts = append(cmdParts, packageName)
+
+	cmd := exec.Command(cmdParts[0], cmdParts[1:]...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error installing package: %v\nOutput: %s\nThis might be because:\n1. You don't have sudo permissions\n2. The package doesn't exist\n3. The package manager is not available", err, string(output))
+	}
+	return nil
+}
+
+func removePackage(packageName string) error {
+	if defaultManager == nil {
+		detectPackageManager()
+	}
+	cmdParts := strings.Split(defaultManager.remove, " ")
+	cmdParts = append(cmdParts, packageName)
+
+	cmd := exec.Command(cmdParts[0], cmdParts[1:]...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error removing package: %v\nOutput: %s\nThis might be because:\n1. You don't have sudo permissions\n2. The package doesn't exist\n3. The package manager is not available", err, string(output))
+	}
+	return nil
+}
+
 func main() {
 	fmt.Println("Welcome to Crobrew - ChromeOS Package Manager")
 	fmt.Println(`
@@ -134,8 +185,10 @@ func main() {
 		fmt.Println("\nOptions:")
 		fmt.Println("1. Update package list")
 		fmt.Println("2. Search packages")
-		fmt.Println("3. Exit")
-		fmt.Print("\nChoose an option (1-3): ")
+		fmt.Println("3. Install package")
+		fmt.Println("4. Remove package")
+		fmt.Println("5. Exit")
+		fmt.Print("\nChoose an option (1-5): ")
 
 		choice, _ := reader.ReadString('\n')
 		choice = strings.TrimSpace(choice)
@@ -165,6 +218,40 @@ func main() {
 			fmt.Println(results)
 
 		case "3":
+			fmt.Print("Enter package name to install: ")
+			packageName, _ := reader.ReadString('\n')
+			packageName = strings.TrimSpace(packageName)
+
+			if packageName == "" {
+				fmt.Println("Package name cannot be empty")
+				continue
+			}
+
+			fmt.Printf("Installing package %s...\n", packageName)
+			if err := installPackage(packageName); err != nil {
+				fmt.Printf("Error: %v\n", err)
+				continue
+			}
+			fmt.Printf("Package %s installed successfully!\n", packageName)
+
+		case "4":
+			fmt.Print("Enter package name to remove: ")
+			packageName, _ := reader.ReadString('\n')
+			packageName = strings.TrimSpace(packageName)
+
+			if packageName == "" {
+				fmt.Println("Package name cannot be empty")
+				continue
+			}
+
+			fmt.Printf("Removing package %s...\n", packageName)
+			if err := removePackage(packageName); err != nil {
+				fmt.Printf("Error: %v\n", err)
+				continue
+			}
+			fmt.Printf("Package %s removed successfully!\n", packageName)
+
+		case "5":
 			fmt.Println("Thank you for using Crobrew!")
 			os.Exit(0)
 

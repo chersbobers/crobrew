@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+
+# Compile and install the Go binary
+go build -o /usr/local/bin/crobrew

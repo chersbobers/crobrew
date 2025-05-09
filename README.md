@@ -1,6 +1,7 @@
 # Crobrew
 
-A universal package manager interface that works across different platforms, including ChromeOS.
+A package manger for chromeos. Simple, Lightweight.
+Crobrew is still in its early stages some things might not work.
 
 ## Installation
 
@@ -21,13 +22,9 @@ go install github.com/chersbobers/crobrew@latest
 
 Once installed, you can run `crobrew` from your terminal. The application will automatically detect your system's package manager:
 
-- ChromeOS/Linux: Uses apt or dnf
-- macOS: Uses Homebrew
-- Windows: Uses WSL (apt) or Chocolatey
-
+- ChromeOS: Uses apt or dnf
 ## Features
 
 - Update package lists
 - Search for packages
 - Automatic package manager detection
-- Cross-platform support

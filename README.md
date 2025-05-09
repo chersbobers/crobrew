@@ -75,6 +75,40 @@ Once installed, you can run `crobrew` from your terminal. The application will a
 - ChromeOS/Linux: Uses apt (Debian/Ubuntu) or dnf (Fedora)
 - macOS: Uses Homebrew
 - Windows: Uses Chocolatey (needs to be installed) or WSL
+
+## Updating Crobrew
+
+To update Crobrew to the latest version:
+
+```bash
+go install github.com/chersbobers/crobrew@latest
+```
+
+For specific versions, you can use:
+```bash
+go install github.com/chersbobers/crobrew@v1.0.0  # Replace with desired version
+```
+
+### Troubleshooting Updates
+
+If you get a "command not found" error after updating:
+
+#### Windows
+Open Command Prompt and run:
+```cmd
+setx PATH "%PATH%;%USERPROFILE%\go\bin"
+```
+
+#### Linux/ChromeOS
+```bash
+echo "export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin" >> ~/.bashrc && source ~/.bashrc
+```
+
+#### macOS
+```bash
+echo "export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin" >> ~/.zshrc && source ~/.zshrc
+```
+
 ## Features
 
 - Automatic package manager detection for all major platforms

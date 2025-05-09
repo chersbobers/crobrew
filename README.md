@@ -7,7 +7,7 @@ A universal package manager interface that works across different platforms, inc
 You can install Crobrew directly using Go:
 
 ```bash
-go install github.com/yourusername/crobrew@latest
+go install github.com/chersbobers/crobrew@latest
 ```
 
 ### Prerequisites

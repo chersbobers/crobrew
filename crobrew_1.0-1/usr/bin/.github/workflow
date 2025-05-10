@@ -1,0 +1,57 @@
+name: Release Debian Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.x'
+
+      - name: Create Debian Package Structure
+        run: |
+          mkdir -p debian/crobrew/DEBIAN
+          mkdir -p debian/crobrew/usr/bin
+          cat > debian/crobrew/DEBIAN/control << EOF
+          Package: crobrew
+          Version: ${GITHUB_REF_NAME#v}
+          Section: utils
+          Priority: optional
+          Architecture: ${{ matrix.arch }}
+          Maintainer: Chersbobers <chazington7@gmail.com>
+          Description: A Simple, Lightweight package manager
+           Crobrew is a package manager that supports multiple
+           package management systems across different platforms.
+          Depends: golang-go
+          EOF
+
+      - name: Build Binary
+        run: |
+          GOOS=linux GOARCH=${{ matrix.arch == 'amd64' && 'amd64' || 'arm64' }} go build -o debian/crobrew/usr/bin/cro
+
+      - name: Build Debian Package
+        run: |
+          chmod 755 debian/crobrew/usr/bin/cro
+          chmod -R 755 debian/crobrew/DEBIAN
+          dpkg-deb --build debian/crobrew
+          mv debian/crobrew.deb crobrew_${GITHUB_REF_NAME#v}_${{ matrix.arch }}.deb
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: crobrew_*_${{ matrix.arch }}.deb
+
+
+git tag v1.0.0
+git push origin v1.0.0

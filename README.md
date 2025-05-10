@@ -4,8 +4,19 @@ A Simple, Lightweight. package manger
 Crobrew is still in its early stages some things might not work.
 
 ## Installation
+Deb/Ubuntu:
+Add the repository:
+```bash
+curl -s https://raw.githubusercontent.com/chersbobers/crobrew/main/scripts/setup.sh | sudo bash
+```
 
-You can install Crobrew directly using Go:
+Install Crobrew:
+```bash
+sudo apt update
+sudo apt install crobrew
+```
+
+Go:
 
 ```bash
 go install github.com/chersbobers/crobrew@latest

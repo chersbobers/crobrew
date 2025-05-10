@@ -1,0 +1,7 @@
+Origin: Crobrew
+Label: Crobrew
+Codename: stable
+Architectures: amd64
+Components: main
+Description: Crobrew Package Repository
+SignWith: yes

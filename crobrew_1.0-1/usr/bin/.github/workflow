@@ -19,6 +19,16 @@ jobs:
         with:
           go-version: '1.x'
 
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y reprepro gnupg
+
+      - name: Setup GPG Key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import
+          gpg --export -a "${{ secrets.GPG_KEY_ID }}" > public.key
+
       - name: Create Debian Package Structure
         run: |
           mkdir -p debian/crobrew/DEBIAN
@@ -47,11 +57,23 @@ jobs:
           dpkg-deb --build debian/crobrew
           mv debian/crobrew.deb crobrew_${GITHUB_REF_NAME#v}_${{ matrix.arch }}.deb
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - name: Setup APT Repository
+        run: |
+          mkdir -p apt/conf
+          cat > apt/conf/distributions << EOF
+          Origin: Crobrew
+          Label: Crobrew
+          Codename: stable
+          Architectures: amd64 arm64
+          Components: main
+          SignWith: ${{ secrets.GPG_KEY_ID }}
+          EOF
+
+          reprepro -b apt includedeb stable crobrew_${GITHUB_REF_NAME#v}_${{ matrix.arch }}.deb
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          files: crobrew_*_${{ matrix.arch }}.deb
-
-
-git tag v1.0.0
-git push origin v1.0.0
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./apt
+          force_orphan: true

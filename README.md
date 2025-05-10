@@ -4,15 +4,12 @@ A Simple, Lightweight. package manger
 Crobrew is still in its early stages some things might not work.
 
 ## Installation
-Deb/Ubuntu:
-Add the repository:
-```bash
-curl -s https://raw.githubusercontent.com/chersbobers/crobrew/main/scripts/setup.sh | sudo bash
-```
 
-Install Crobrew:
+To install Crobrew on Linux/ChromeOS:
+
 ```bash
-sudo apt update
+# Add the repository and install
+curl -fsSL https://raw.githubusercontent.com/chersbobers/crobrew/main/scripts/setup.sh | sudo bash
 sudo apt install crobrew
 ```
 

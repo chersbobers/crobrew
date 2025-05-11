@@ -16,6 +16,20 @@ type PackageManager struct {
 	install string
 	remove  string
 	name    string
+	// version field removed as it's currently unused
+}
+
+func (pm *PackageManager) checkAvailable() bool {
+	var cmd *exec.Cmd
+
+	if strings.HasPrefix(pm.name, "wsl") {
+		cmd = exec.Command("wsl", "command", "-v", strings.Split(pm.search, " ")[1])
+	} else {
+		cmdParts := strings.Split(pm.search, " ")
+		cmd = exec.Command(cmdParts[0], "--version")
+	}
+
+	return cmd.Run() == nil
 }
 
 // Package manager commands for different platforms
@@ -81,62 +95,126 @@ var packageManagers = map[string][]PackageManager{
 var defaultManager *PackageManager
 
 func init() {
-	// Detect the package manager
-	detectPackageManager()
+	// Remove detectPackageManager from init
+	// It will be called when needed instead
 }
 
 func detectPackageManager() {
 	os := runtime.GOOS
-	managers := packageManagers[os]
+	fmt.Printf("Detected OS: %s\n", os)
+	managers, ok := packageManagers[os]
 
-	if len(managers) == 0 {
-		// Default to Linux package managers for ChromeOS and others
+	if !ok || len(managers) == 0 {
+		fmt.Println("No package managers found for OS, defaulting to Linux")
 		managers = packageManagers["linux"]
 	}
 
-	// Try each package manager until we find one that works
-	for _, pm := range managers {
-		cmdParts := strings.Split(pm.search, " ")
-		cmd := exec.Command(cmdParts[0], "--version")
-		if err := cmd.Run(); err == nil {
-			defaultManager = &pm
+	for i := range managers {
+		pm := &managers[i]
+		fmt.Printf("Checking for %s...\n", pm.name)
+
+		if pm.checkAvailable() {
+			defaultManager = pm
+			fmt.Printf("Selected package manager: %s\n", pm.name)
+			// Update package list after detecting package manager
+			if err := updatePackageList(); err != nil {
+				fmt.Printf("Warning: Failed to update package list: %v\n", err)
+			}
 			return
 		}
 	}
 
-	// If no package manager is found, default to apt for ChromeOS
+	fmt.Println("No working package manager found, defaulting to apt")
 	defaultManager = &packageManagers["linux"][0]
 }
 
-func getPackageCommands() (string, string) {
+func searchPackages(query string) (string, error) {
 	if defaultManager == nil {
 		detectPackageManager()
 	}
-	return defaultManager.search, defaultManager.update
-}
-
-func searchPackages(query string) (string, error) {
-	searchCmd, _ := getPackageCommands()
-	cmdParts := strings.Split(searchCmd, " ")
+	cmdParts := strings.Split(defaultManager.search, " ")
 	cmdParts = append(cmdParts, query)
 
-	cmd := exec.Command(cmdParts[0], cmdParts[1:]...)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return "", fmt.Errorf("error searching packages: %v\nThis might be because:\n1. You're not in a Linux environment\n2. The package manager is not available\n3. You don't have the required permissions", err)
-	}
-	return string(output), nil
+	return executeCommand(cmdParts)
 }
 
 func updatePackageList() error {
-	_, updateCmd := getPackageCommands()
-	cmdParts := strings.Split(updateCmd, " ")
-
-	cmd := exec.Command(cmdParts[0], cmdParts[1:]...)
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("error updating package list: %v\nThis might be because:\n1. You're not in a Linux environment\n2. You don't have sudo permissions\n3. The package manager is not available", err)
+	if defaultManager == nil {
+		detectPackageManager()
 	}
+	cmdParts := strings.Split(defaultManager.update, " ")
+
+	output, err := executeCommand(cmdParts)
+	if err != nil {
+		return fmt.Errorf("failed to update package list: %v", err)
+	}
+	fmt.Print(output)
 	return nil
+}
+
+func updateAllPackageManagers() error {
+	goos := runtime.GOOS
+	managers := packageManagers[goos]
+
+	if len(managers) == 0 {
+		return fmt.Errorf("no package managers found for OS: %s", goos)
+	}
+
+	var errors []string
+	updated := false
+
+	for _, pm := range managers {
+		fmt.Printf("\nUpdating %s...\n", pm.name)
+		cmdParts := strings.Split(pm.update, " ")
+		cmd := exec.Command(cmdParts[0], cmdParts[1:]...)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+
+		if err := cmd.Run(); err != nil {
+			errors = append(errors, fmt.Sprintf("%s: %v", pm.name, err))
+			continue
+		}
+		updated = true
+		fmt.Printf("%s updated successfully!\n", pm.name)
+	}
+
+	if !updated {
+		return fmt.Errorf("failed to update any package managers:\n%s", strings.Join(errors, "\n"))
+	}
+
+	if len(errors) > 0 {
+		fmt.Printf("\nWarning: Some updates failed:\n%s\n", strings.Join(errors, "\n"))
+	}
+
+	return nil
+}
+
+func executeCommand(cmdParts []string) (string, error) {
+	if len(cmdParts) == 0 {
+		return "", fmt.Errorf("empty command")
+	}
+
+	var cmd *exec.Cmd
+	if runtime.GOOS == "windows" && strings.HasPrefix(cmdParts[0], "wsl") {
+		// Remove "wsl" prefix and add -e flag
+		cmdParts = cmdParts[1:] // Remove "wsl"
+		wslArgs := append([]string{"-e"}, cmdParts...)
+		cmd = exec.Command("wsl", wslArgs...)
+	} else {
+		program := cmdParts[0]
+		args := []string{}
+		if len(cmdParts) > 1 {
+			args = cmdParts[1:]
+		}
+		cmd = exec.Command(program, args...)
+	}
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return string(output), fmt.Errorf("%v: %s", err, output)
+	}
+
+	return string(output), nil
 }
 
 func installPackage(packageName string) error {
@@ -146,11 +224,11 @@ func installPackage(packageName string) error {
 	cmdParts := strings.Split(defaultManager.install, " ")
 	cmdParts = append(cmdParts, packageName)
 
-	cmd := exec.Command(cmdParts[0], cmdParts[1:]...)
-	output, err := cmd.CombinedOutput()
+	output, err := executeCommand(cmdParts)
 	if err != nil {
-		return fmt.Errorf("error installing package: %v\nOutput: %s\nThis might be because:\n1. You don't have sudo permissions\n2. The package doesn't exist\n3. The package manager is not available", err, string(output))
+		return fmt.Errorf("failed to install %s: %v", packageName, err)
 	}
+	fmt.Print(output)
 	return nil
 }
 
@@ -161,11 +239,11 @@ func removePackage(packageName string) error {
 	cmdParts := strings.Split(defaultManager.remove, " ")
 	cmdParts = append(cmdParts, packageName)
 
-	cmd := exec.Command(cmdParts[0], cmdParts[1:]...)
-	output, err := cmd.CombinedOutput()
+	output, err := executeCommand(cmdParts)
 	if err != nil {
-		return fmt.Errorf("error removing package: %v\nOutput: %s\nThis might be because:\n1. You don't have sudo permissions\n2. The package doesn't exist\n3. The package manager is not available", err, string(output))
+		return fmt.Errorf("failed to remove %s: %v", packageName, err)
 	}
+	fmt.Print(output)
 	return nil
 }
 
@@ -194,12 +272,12 @@ func main() {
 	command := args[0]
 	switch command {
 	case "update":
-		fmt.Println("Updating package list...")
-		if err := updatePackageList(); err != nil {
+		fmt.Println("Updating all package managers...")
+		if err := updateAllPackageManagers(); err != nil {
 			fmt.Printf("Error: %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Println("Package list updated successfully!")
+		fmt.Println("All package managers updated successfully!")
 
 	case "search":
 		if len(args) < 2 {
@@ -281,12 +359,12 @@ func startInteractiveMode() {
 
 		switch choice {
 		case "1":
-			fmt.Println("Updating package list...")
-			if err := updatePackageList(); err != nil {
+			fmt.Println("Updating all package managers...")
+			if err := updateAllPackageManagers(); err != nil {
 				fmt.Printf("Error: %v\n", err)
 				continue
 			}
-			fmt.Println("Package list updated successfully!")
+			fmt.Println("All package managers updated successfully!")
 
 		case "2":
 			fmt.Print("Enter search term (or press Enter to list all): ")

@@ -8,12 +8,14 @@ Crobrew is still in its early stages some things might not work.
 To install Crobrew on Linux/ChromeOS:
 
 # Add the GPG key and repository
+```bash
 curl -fsSL https://raw.githubusercontent.com/chersbobers/crobrew/main/scripts/setup.sh | sudo bash
+```
 
 # Install Crobrew
-sudo apt update
-sudo apt install crobrew
-
+```bash
+sudo apt update && sudo apt install crobrew
+```
 Go:
 
 ```bash

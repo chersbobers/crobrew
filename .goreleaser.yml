@@ -1,3 +1,4 @@
+version: 2
 project_name: crobrew
 
 before:
@@ -45,7 +46,7 @@ brews:
   - name: crobrew
     homepage: "https://github.com/chersbobers/crobrew"
     description: "A Simple, Lightweight package manager"
-    tap:
+    repository:
       owner: chersbobers
       name: homebrew-crobrew
     commit_author:

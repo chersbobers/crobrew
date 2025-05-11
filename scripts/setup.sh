@@ -5,12 +5,11 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
-# Function to print status messages
+
 print_status() {
     echo -e "${GREEN}[*]${NC} $1"
 }
 
-# Function to print error messages
 print_error() {
     echo -e "${RED}[!]${NC} $1"
 }

@@ -222,18 +222,21 @@ func executeCommand(cmdParts []string) (string, error) {
 }
 
 func installPackage(packageName string) error {
-	if defaultManager == nil {
-		return fmt.Errorf("no valid package manager detected")
-	}
-	cmdParts := strings.Split(defaultManager.install, " ")
-	cmdParts = append(cmdParts, packageName)
+    if defaultManager == nil {
+        fmt.Println("Error: No valid package manager detected.")
+        os.Exit(1)
+    }
 
-	output, err := executeCommand(cmdParts)
-	if err != nil {
-		return fmt.Errorf("failed to install %s: %v", packageName, err)
-	}
-	fmt.Print(output)
-	return nil
+    cmdParts := strings.Split(defaultManager.install, " ")
+    cmdParts = append(cmdParts, packageName)
+
+    fmt.Printf("Executing install command: %s\n", strings.Join(cmdParts, " "))
+    output, err := executeCommand(cmdParts)
+    if err != nil {
+        return fmt.Errorf("failed to install %s: %v", packageName, err)
+    }
+    fmt.Print(output)
+    return nil
 }
 
 func removePackage(packageName string) error {

@@ -95,8 +95,12 @@ var packageManagers = map[string][]PackageManager{
 var defaultManager *PackageManager
 
 func init() {
-	// Remove detectPackageManager from init
-	// It will be called when needed instead
+	// Detect the package manager during initialization
+	detectPackageManager()
+	if defaultManager == nil {
+		fmt.Println("Error: No valid package manager detected. Please ensure a supported package manager is installed.")
+		os.Exit(1)
+	}
 }
 
 func detectPackageManager() {
@@ -219,7 +223,7 @@ func executeCommand(cmdParts []string) (string, error) {
 
 func installPackage(packageName string) error {
 	if defaultManager == nil {
-		detectPackageManager()
+		return fmt.Errorf("no valid package manager detected")
 	}
 	cmdParts := strings.Split(defaultManager.install, " ")
 	cmdParts = append(cmdParts, packageName)

@@ -1,5 +1,5 @@
 # Crobrew
-
+# Might move to Crobrew/Crobrew (updates for both for now though)
 A Simple, Lightweight. package manger
 Crobrew is still in its early stages some things might not work.
 

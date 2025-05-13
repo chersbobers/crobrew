@@ -1,27 +1,20 @@
 # Crobrew
-# Might move to Crobrew/Crobrew (updates for both for now though)
+
+A Simple, Lightweight package manager.  
+Crobrew is still in its early stages, so some things might not work.
 A Simple, Lightweight. package manger
 Crobrew is still in its early stages some things might not work.
 
 ## Installation
 
-To install Crobrew on Linux/ChromeOS:
+To install Crobrew:
 
-# Add the GPG key and repository
-```bash
-curl -fsSL https://raw.githubusercontent.com/chersbobers/crobrew/main/scripts/setup.sh | sudo bash
-```
-
-# Install Crobrew
-```bash
-sudo apt update && sudo apt install crobrew
-```
-Go:
-
+### Go (All Platforms)
 ```bash
 go install github.com/chersbobers/crobrew@latest
 ```
-You may need to use
+
+You may need to add Go to your PATH:
 ```bash
 echo "export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin" >> ~/.bashrc && source ~/.bashrc
 ```
@@ -31,8 +24,8 @@ echo "export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin" >> ~/.bashrc && source ~
 - Go (any version)
 
 #### ChromeOS Setup
-1. Enable Linux (Beta) in ChromeOS Settings
-2. Open Linux Terminal
+1. Enable Linux (Beta) in ChromeOS Settings.
+2. Open Linux Terminal.
 3. Install Go:
    ```bash
    sudo apt-get update && sudo apt-get install golang-go
@@ -72,8 +65,8 @@ echo "export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin" >> ~/.bashrc && source ~
    ```
 
 #### Windows Setup
-1. Download Go from [golang.org](https://golang.org/dl/)
-2. Run the installer
+1. Download Go from [golang.org](https://golang.org/dl/).
+2. Run the installer.
 3. Open Command Prompt and add Go to your PATH:
    ```cmd
    setx PATH "%PATH%;%USERPROFILE%\go\bin"
@@ -107,13 +100,13 @@ cro interactive
 
 ### Interactive Mode
 
-Run `cro` without arguments to start interactive mode, which provides a menu-based interface:
+Run `cro` without arguments to start interactive mode, which provides a menu-based interface.
 
 Once installed, you can run `crobrew` from your terminal. The application will automatically detect your system's package manager:
 
 - ChromeOS/Linux: Uses apt (Debian/Ubuntu) or dnf (Fedora)
 - macOS: Uses Homebrew
-- Windows: Uses Chocolatey (needs to be installed) or WSL
+- Windows: Uses Chocolatey (needs to be installed) or WSL.
 
 ## Updating Crobrew
 
@@ -145,16 +138,16 @@ echo "export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin" >> ~/.bashrc && source ~
 
 #### macOS
 ```bash
-echo "export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin" >> ~/.zshrc && source ~/.zshrc
+echo "export PATH=$PATH:/usr/local/go/bin/$HOME/go/bin" >> ~/.zshrc && source ~/.zshrc
 ```
 
 ## Features
 
-- Automatic package manager detection for all major platforms
-- Update package lists
-- Search for packages
-- Install packages
-- Remove packages
+- Automatic package manager detection for all major platforms.
+- Update package lists.
+- Search for packages.
+- Install packages.
+- Remove packages.
 - Supports multiple package managers:
   - apt (Debian/Ubuntu/ChromeOS)
   - dnf (Fedora)
@@ -166,9 +159,9 @@ echo "export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin" >> ~/.zshrc && source ~/
 
 ## Supported Package Managers
 
-| OS | Package Managers |
-|----|-----------------|
-| ChromeOS | apt, snap |
-| Linux | apt, dnf, pacman, snap |
-| macOS | brew |
-| Windows | chocolatey, WSL-apt |
+| OS         | Package Managers       |
+|------------|-------------------------|
+| ChromeOS   | apt, snap               |
+| Linux      | apt, dnf, pacman, snap  |
+| macOS      | brew                    |
+| Windows    | chocolatey, WSL-apt     |
